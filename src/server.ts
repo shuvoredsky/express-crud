@@ -53,25 +53,49 @@ app.get('/', (req: Request ,res: Response)=>{
     res.send("Hello worlds");
 })
 
-app.post("/users", async(req:Request, res:Response)=>{
-    const {name, email} = req.body;
-    try{
-        const result = await pool.query(`INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`, [name, email])
-        // console.log(result.rows[0])
-        
-    }catch(error: any){
-        res.status(201).json({
+app.post("/users", async (req: Request, res: Response) => {
+    const { name, email } = req.body;
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`,
+            [name, email]
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "User created successfully",
+            data: result.rows[0],
+        });
+
+    } catch (error: any) {
+        return res.status(500).json({
             success: false,
-            message: "Data Inserted Successfully",
-            data: result.rows[0]
+            message: "User creation failed",
+            error: error.message,
+        });
+    }
+});
+
+app.get("/users", async(req: Request, res: Response)=>{
+    try{
+        const result = await pool.query(`SELECT * FROM users`);
+
+        res.status(200).json({
+            success: true,
+            message: "Users retrieved successfully",
+            data: result.rows,
+        })
+
+    }catch(err: any){
+        res.status(500).json({
+            success: false,
+            message: err.message,
+            details: err
         })
     }
-    console.log(req.body)
-    res.status(201).json({
-        success: true,
-        message: "API is working"
-    })
 })
+
 
 app.listen(port, ()=>{
     console.log(`Server is running on port ${port}`)
