@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express"
+import express, { NextFunction, Request, Response } from "express"
 import {Pool} from "pg";
 import dotenv from "dotenv"
 import path from "path"
@@ -8,6 +8,7 @@ dotenv.config({path: path.join(process.cwd(), ".env")})
 
 const app = express()
 const port = 5000
+app.use(express.json())
 
 const pool = new Pool({
     connectionString: `${process.env.CONNECTION_STR}`
@@ -41,11 +42,15 @@ const initDB = async()=>{
             `)
 }
 
+
+
 initDB()
 
-// parser
-app.use(express.json())
-// app.use(express.urlencoded()) for using form
+const logger = (req:Request, res:Response, next: NextFunction)=>{
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}\n`)
+    next()
+
+}
 
 
 
@@ -217,6 +222,14 @@ app.get("/todos", async(req: Request, res: Response)=>{
             details: err
         })
     }
+})
+
+app.use((req:Request, res:Response)=>{
+    res.status(404).json({
+        success: false,
+        message: "Route Not Found",
+        path: req.path,
+    })
 })
 
 app.listen(port, ()=>{
