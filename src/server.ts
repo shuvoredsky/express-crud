@@ -54,7 +54,7 @@ const logger = (req:Request, res:Response, next: NextFunction)=>{
 
 
 
-app.get('/', (req: Request ,res: Response)=>{
+app.get('/', logger,(req: Request ,res: Response)=>{
     res.send("Hello worlds");
 })
 
