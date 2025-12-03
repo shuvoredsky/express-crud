@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import config from "../config";
 
-const auth = ()=>{
+const auth = (...roles: string[])=>{
     return async (req: Request, res: Response, next: NextFunction)=>{
       try{
 
@@ -13,9 +13,15 @@ const auth = ()=>{
             message: "you are not allowed!!"
         })
        }
-       const decode = jwt.verify(token, config.jwtSecret as string)
+       const decode = jwt.verify(token, config.jwtSecret as string)  as JwtPayload;
        console.log({decode})
-       req.user = decode as JwtPayload;
+       req.user = decode;
+       if(roles.length && !roles.includes(decode.roles as string)){
+        return res.status(500).json({
+          error: "unauthorized!!"
+        })
+       }
+
        next()
 
       }catch(err: any){
